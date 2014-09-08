@@ -1,5 +1,6 @@
 var request = require("request");
 var _ = require("underscore");
+var mongodb = require("mongodb").MongoClient;
 
 var config = require("./lib/config")({
 	PORT : 3000,
@@ -18,25 +19,30 @@ if(!config.get("MONITORED_URL")) {
 // Switching out the default underscore <%=%> for %{} delimiters
 var url_template = _.template(config.get("RESPONSE_URL_FORMAT"), { interpolate : /\$\{(.+?)\}/ });
 
-request(config.get("MONITORED_URL"), function(error, response, body) {
-	if(error || response.statusCode!=200) {
-		console.log("Detected error monitoring " + config.get("MONITORED_URL") + ", so sending notification");
-		var model = {
-			MESSAGE : encodeURIComponent("Error - " + error),
-			USERNAME : config.get("USER_TO_NOTIFY")
-		};
-		model.link = url_template(model);
-		sendYo(model, 3, function(err, response) {
-			if(err) {
-				return console.log("Error sending YO to user " + config.get("USER_TO_NOTIFY") + " - " + err);
+function monitor(link) {
+	request(link.url, function(error, response, body) {
+		if(error || response.statusCode!=200) {
+			console.log("Detected error monitoring " + link.url + ", so sending notification");
+			var model = {
+				MESSAGE : encodeURIComponent("Error - " + error),
+				USERNAME : link.username
+			};
+			if(!error) {
+				model.MESSAGE = encodeURIComponent("StatusCode was " + response.statusCode);
 			}
-			return console.log("Notified user " + config.get("USER_TO_NOTIFY"));
-		});
-	}
-	else {
-		console.log("Monitored " + config.get("MONITORED_URL") + " and all is well.");
-	}
-});
+			model.link = url_template(model);
+			sendYo(model, 3, function(err, response) {
+				if(err) {
+					return console.log("Error sending YO to user " + link.username + " - " + err);
+				}
+				return console.log("Notified user " + link.username);
+			});
+		}
+		else {
+			console.log("Monitored " + link.url + " and all is well.");
+		}
+	});
+}
 
 function sendYo(model, tries, callback) {
 	request.post(config.get("YO_API_SEND_URL"), { form : { api_token : config.get("YO_API_KEY"), username : model.USERNAME, link : model.link } }, function(err, response) {
@@ -65,3 +71,9 @@ function sendYo(model, tries, callback) {
 		}
 	}); 
 }
+
+mongodb.connect(config.get("MONGOHQ_URL"), function(err, db) {
+	db.link.find( { active : { "$gt" : 0 } }, function(err, links) {
+		links.forEach(monitor);
+	});
+});
