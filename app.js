@@ -3,7 +3,7 @@ var morgan = require("morgan");
 var http = require("http");
 var request = require("request");
 var _ = require("underscore");
-var mongodb = require("mongodb").MongoClient;
+var mongodb = require("mongodb");
 
 var config = require("./lib/config")({
 	PORT : 3000,
@@ -23,7 +23,7 @@ app.get("/yo", function(req, res) {
 	
 	if(link) {
 		// TODO - Check the link at least once before adding it to be monitored
-		app.db.link.save( { username : username, url : link, name : null, active : 1 }, function(err, saved_link) {
+		app.mongo.collection("link").save( { username : username, url : link, name : null, active : 1 }, function(err, saved_link) {
 			console.log("Saved - " + JSON.stringify(saved_link));
 		});
 	}
@@ -38,7 +38,7 @@ app.get("/message", function(req, res) {
 });
 
 app.get("/error_report", function(req, res) {
-	app.db.error_report.find( { _id : req.query.id }, function(err, error_report) {
+	app.mongo.collection("error_report").findOne( { _id : new mongodb.ObjectID(req.query.id) }, function(err, error_report) {
 		if(err) {
 			return res.send("Error reading report - " + err);
 		}
@@ -46,7 +46,7 @@ app.get("/error_report", function(req, res) {
 	});
 });
 
-mongodb.connect(config.get("MONGOHQ_URL"), function(err, db) {
+mongodb.MongoClient.connect(config.get("MONGOHQ_URL"), function(err, db) {
 	if(err) {
 		return console.log("Could not connect to MONGOHQ_URL");
 	}
