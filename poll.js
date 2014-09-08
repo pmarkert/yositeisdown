@@ -5,7 +5,7 @@ var config = require("./lib/config")({
 	PORT : 3000,
 	YO_API_KEY : "INSERT KEY HERE",
 	YO_API_SEND_URL : "https://api.justyo.co/yo/",
-	RESPONSE_URL_FORMAT : "${SCHEME}://${HOST}/message?${MESSAGE}",
+	RESPONSE_URL_FORMAT : "${SCHEME}://${HOST}/message?m=${MESSAGE}",
 	MONITORED_URL : null,
 	USER_TO_NOTIFY : null
 });

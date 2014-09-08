@@ -25,7 +25,7 @@ app.get("/yo", function(req, res) {
 });
 
 app.get("/message", function(req, res) {
-	res.send(req.query);
+	res.send(req.query.m);
 });
 
 app.listen(config.get("PORT"), function(err) {
