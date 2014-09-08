@@ -10,15 +10,20 @@ var config = require("./lib/config")({
 	USER_TO_NOTIFY : null
 });
 
-if(!MONITORED_URL) {
+if(!config.get("MONITORED_URL")) {
 	return console.log("No MONITORED_URL configured, skipping...");
 }
+
+// Process the RESPONSE_URL_FORMAT to replace scheme, hostname, etc.
+// Switching out the default underscore <%=%> for %{} delimiters
+var url_template = _.template(config.get("RESPONSE_URL_FORMAT"), { interpolate : /\$\{(.+?)\}/ });
+
 request(config.get("MONITORED_URL"), function(error, response, body) {
-	if(response.status!=200) {
+	if(error || response.statusCode!=200) {
 		console.log("Detected error monitoring " + config.get("MONITORED_URL") + ", so sending notification");
 		var model = {
-			MESSAGE : encodeURIComponent("Error - " + err),
-			USERNAME : req.query.username
+			MESSAGE : encodeURIComponent("Error - " + error),
+			USERNAME : config.get("USER_TO_NOTIFY")
 		};
 		model.link = url_template(model);
 		sendYo(model, 3, function(err, response) {
