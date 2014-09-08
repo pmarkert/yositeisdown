@@ -18,6 +18,7 @@ app.use("/", express.static(__dirname + "/public"));
 // YO will call this and supply the username as a querystring
 app.get("/yo", function(req, res) {
 	console.log("Thanks.");
+	res.send("Thanks.");
 });
 
 app.listen(config.get("PORT"), function(err) {
