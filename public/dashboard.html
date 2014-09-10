@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en" ng-app="dashboardApp">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>YoSiteIsDown Dashboard</title>
+
+    <!-- Bootstrap -->
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/css/bootstrap.min.css" rel="stylesheet">
+
+    <!-- HTML5 Shim and Respond.js IE8 support of HTML5 elements and media queries -->
+    <!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
+    <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
+    <![endif]-->
+    <script src="https://ajax.googleapis.com/ajax/libs/angularjs/1.2.23/angular.min.js" type="text/javascript"></script>
+    <script src="dashboard.js" type="text/javascript"></script>
+  </head>
+  <body>
+    <h1>YoSiteIsDown Dashboard!</h1>
+    <div ng-controller="LinkController as links">
+       <ul ng-repeat="link in links.links">
+	  <fieldset>
+	  <div>
+	  Name : <input type="text" ng-model="link.name" />
+	  </div>
+	  <div>
+	  Url : <input type="url" ng-model="link.url" />
+	  </div>
+	  <div>
+	  Remaining Failures : <input type="number" ng-model="link.active" />
+	  </div>
+	  <div>
+	  <input type="submit" ng-click="links.save(link)" />
+	  </div>
+	  </fieldset>
+       </ul>
+    </div>
+
+    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.1/jquery.min.js"></script>
+    <!-- Include all compiled plugins (below), or include individual files as needed -->
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.2.0/js//bootstrap.min.js"></script>
+  </body>
+</html>

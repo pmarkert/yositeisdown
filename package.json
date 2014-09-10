@@ -9,6 +9,7 @@
   "author": "Phillip Markert <pmarkert@ephisys.com>",
   "license": "ISC",
   "dependencies": {
+    "body-parser": "^1.8.1",
     "express": "^4.8.8",
     "mongodb": "^1.4.10",
     "morgan": "^1.3.0",

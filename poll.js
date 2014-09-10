@@ -1,6 +1,7 @@
 var request = require("request");
 var _ = require("underscore");
 var mongodb = require("mongodb").MongoClient;
+var uuid = require("node-uuid");
 
 var config = require("./lib/config")({
 	PORT : 3000,
@@ -23,7 +24,7 @@ function monitor(link, callback) {
 					console.log("Error connecting to mongo to save error_report - " + err);
 					return callback(false);
 				}
-				db.collection("error_report").save( { linkid : link._id, date : new Date(), response : { statusCode : response.statusCode }, body : body }, function(err, saved_report) {
+				db.collection("error_report").save( { _id : uuid.v4(), linkid : link._id, date : new Date(), response : { statusCode : response.statusCode }, body : body }, function(err, saved_report) {
 					db.close();
 					if(err) {
 						console.log("Error saving error_report from link - " + JSON.stringify(link) + " - " + err);
@@ -53,7 +54,6 @@ function monitor(link, callback) {
 }
 
 function sendYo(model, tries, callback) {
-	console.log("Yoing - " + JSON.stringify(model));
 	request.post(config.get("YO_API_SEND_URL"), { form : { api_token : config.get("YO_API_KEY"), username : model.USERNAME, link : model.link } }, function(err, response) {
 		if(err || response.statusCode !== 200) {
 			if(/Rate limit exceeded. Only one Yo per recipient per minute./.test(response.body)) { // Need to find a less fragile way to detect this

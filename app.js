@@ -4,6 +4,8 @@ var http = require("http");
 var request = require("request");
 var _ = require("underscore");
 var mongodb = require("mongodb");
+var bodyParser = require("body-parser");
+var uuid = require("node-uuid");
 
 var config = require("./lib/config")({
 	PORT : 3000,
@@ -13,6 +15,7 @@ var config = require("./lib/config")({
 
 var app = express();
 app.use(morgan('dev'));
+app.use(bodyParser.json());
 app.use("/", express.static(__dirname + "/public"));
 
 // GET Endpoint triggered as the yo application callback
@@ -22,8 +25,7 @@ app.get("/yo", function(req, res) {
 	var link = req.query.link;
 	
 	if(link) {
-		// TODO - Check the link at least once before adding it to be monitored
-		app.mongo.collection("link").save( { username : username, url : link, name : null, active : 1 }, function(err, saved_link) {
+		app.mongo.collection("link").save( { _id : uuid.v4(), username : username, url : link, name : null, active : 1 }, function(err, saved_link) {
 			console.log("Saved - " + JSON.stringify(saved_link));
 		});
 	}
@@ -38,11 +40,28 @@ app.get("/message", function(req, res) {
 });
 
 app.get("/error_report", function(req, res) {
-	app.mongo.collection("error_report").findOne( { _id : new mongodb.ObjectID(req.query.id) }, function(err, error_report) {
+	app.mongo.collection("error_report").findOne( { _id : req.query.id }, function(err, error_report) {
 		if(err) {
 			return res.send("Error reading report - " + err);
 		}
 		return res.json(error_report);
+	});
+});
+
+app.get("/api/links", function(req, res) {
+	var username = req.query.username;
+	app.mongo.collection("link").find( { username : username }, function(err, links) {
+		if(err) return res.json( { Error : err } );
+		return links.toArray(function(err, arr) {
+			res.json(arr);
+		});
+	});
+});
+
+app.post("/api/link", function(req, res) {
+	app.mongo.collection("link").save(req.body, function(err, saved) {
+		if(err) return res.json( { Error : err } );
+		return res.json(saved);
 	});
 });
 
