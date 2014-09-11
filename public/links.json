@@ -1,4 +1,0 @@
-[ 
-	{ "_id" : "abc", "name" : "one", "url" : "http://www.one.com", "active" : 3 },
-	{ "_id" : "xyz", "name" : "two", "url" : "http://www.two.com", "active" : 1 }
-]

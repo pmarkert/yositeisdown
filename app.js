@@ -9,9 +9,10 @@ var uuid = require("node-uuid");
 
 var config = require("./lib/config")({
 	PORT : 3000,
-	YO_API_KEY : "INSERT KEY HERE",
-	YO_API_SEND_URL : "https://api.justyo.co/yo/"
+	YO_API_KEY : null
 });
+
+var sendYo = require("./lib/yo_api")({ YO_API_KEY : config.get("YO_API_KEY"), YO_API_SEND_URL : config.get("YO_API_SEND_URL") });
 
 var app = express();
 app.use(morgan('dev'));
@@ -19,24 +20,30 @@ app.use(bodyParser.json());
 app.use("/", express.static(__dirname + "/public"));
 
 // GET Endpoint triggered as the yo application callback
-// YO will call this and supply the username as a querystring
+// YO will call this and supply the username and/or link
 app.get("/yo", function(req, res) {
 	var username = req.query.username;
 	var link = req.query.link;
+	var dashboard_link = ((req.connection.encrypted || req.headers['x-forwarded-proto'] === "https") ? "https" : "http") + "://" + req.get("HOST") + "/dashboard.html?" + username;
 	
 	if(link) {
+		// New link, let's save it and send the user to the dashboard
 		app.mongo.collection("link").save( { _id : uuid.v4(), username : username, url : link, name : null, active : 1 }, function(err, saved_link) {
-			console.log("Saved - " + JSON.stringify(saved_link));
+			if(err) 
+				console.log("Error saving link - " + err);
+			else 
+				console.log("Saved - " + JSON.stringify(saved_link));
+			sendYo(username, dashboard_link, function(err, res) {
+				if(err) console.log("Error yo'ing user - " + username + " with link " + link + ":" + err);
+			});
 		});
 	}
 	else {
-		console.log("Empty yo, send user to the dashboard.");
-		res.send("Empty yo, send user to the dashboard.");
+		sendYo(username, dashboard_link, function(err, res) {
+			if(err) console.log("Error yo'ing user - " + username + " with link " + link + ":" + err);
+		});
 	}
-});
-
-app.get("/message", function(req, res) {
-	res.send(req.query.m);
+	res.send();
 });
 
 app.get("/error_report", function(req, res) {
