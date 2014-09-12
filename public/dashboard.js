@@ -20,6 +20,7 @@
 		self.save = function(link) {
 			$log.log("Saving - " + JSON.stringify(link));
 			$http.post('/api/link', link).success(function(result) { $log.log(result); });
+			self.editing = null;
 		};
 
 		self.cancel = function(link) {
