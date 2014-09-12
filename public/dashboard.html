@@ -21,30 +21,39 @@
     <script src="dashboard.js" type="text/javascript"></script>
   </head>
   <body>
-    <h1>YoSiteIsDown Dashboard!</h1>
-    <div ng-controller="LinkController as links">
-       <input type="submit" class="btn btn-primary" value="Add" ng-click="links.add()" ng-show="!links.editing"/>
-       <ul ng-repeat="link in links.links">
-    	  <fieldset ng-show="links.editing===link">
-      	  <div>
-      	  Name : <input type="text" ng-model="link.name" />
-      	  </div>
-      	  <div>
-      	  Url : <input type="url" ng-model="link.url" />
-      	  </div>
-      	  <div>
-      	  Remaining Failures : <input type="number" ng-model="link.active" />
-      	  </div>
-      	  <div>
-      	  <input type="submit" class="btn btn-success" value="Save" ng-click="links.save(link)" />
-          <input type="submit" class="btn btn-warning" value="Cancel" ng-click="links.cancel(link)" />
-      	  </div>
-    	  </fieldset>
-        <div ng-show="links.editing!==link">
-          <a href="{{link.url}}">{{link.name}}</a>
-          <input type="button" class="btn btn-success" ng-click="links.edit(link)" value="Edit"/>
-        </div>
-       </ul>
+    <div class="container">
+       <div>
+          <h1>YoSiteIsDown Dashboard!</h1>
+       </div>
+      <div ng-controller="LinkController as links">
+         <div>
+            <div>Manage links</div>
+            <div>
+               <input type="submit" class="btn btn-primary" value="Add" ng-click="links.add()" ng-show="!links.editing"/>
+            </div>
+         </div>
+         <div ng-repeat="link in links.links">
+           <div ng-show="links.editing===link">
+              <div>
+                Name : <input type="text" ng-model="link.name" />
+              </div>
+              <div>
+                Url : <input type="url" ng-model="link.url" />
+              </div>
+              <div>
+                Remaining Failures : <input type="number" ng-model="link.active" />
+              </div>
+              <div>
+                <input type="submit" class="btn btn-success" value="Save" ng-click="links.save(link)" />
+                <input type="submit" class="btn btn-warning" value="Cancel" ng-click="links.cancel(link)" />
+              </div>
+            </div>
+            <div ng-show="links.editing!==link">
+              <a href="{{link.url}}">{{link.name}}</a>
+              <input type="button" class="btn btn-success" ng-click="links.edit(link)" value="Edit"/>
+            </div>
+         </div>
+      </div>
     </div>
 
     <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
