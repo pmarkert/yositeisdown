@@ -27,7 +27,7 @@ app.get("/yo", function(req, res) {
 	var dashboard_link = ((req.connection.encrypted || req.headers['x-forwarded-proto'] === "https") ? "https" : "http") + "://" + req.get("HOST") + "/dashboard.html?" + username;
 	
 	if(link) {
-		hyperpotamus.process({ request: link, response: [ 302, headers : { location : /(:<url>.+)/ } ] }, {}, function(err, session) {
+		hyperpotamus.process({ request: link, response: [ 302, { headers : { location : /(:<url>.+)/ } } ] }, {}, function(err, session) {
 			// New link, let's save it and send the user to the dashboard
 			app.mongo.collection("link").save( { _id : uuid.v4(), username : username, url : session["url"], name : null, active : 1 }, function(err, saved_link) {
 				if(err) 
