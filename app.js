@@ -1,11 +1,11 @@
 var express = require("express");
 var morgan = require("morgan");
 var http = require("http");
-var request = require("request");
 var _ = require("underscore");
 var mongodb = require("mongodb");
 var bodyParser = require("body-parser");
 var uuid = require("node-uuid");
+var hyperpotamus = require("hyperpotamus");
 
 var config = require("./lib/config")({
 	PORT : 3000,
@@ -27,14 +27,16 @@ app.get("/yo", function(req, res) {
 	var dashboard_link = ((req.connection.encrypted || req.headers['x-forwarded-proto'] === "https") ? "https" : "http") + "://" + req.get("HOST") + "/dashboard.html?" + username;
 	
 	if(link) {
-		// New link, let's save it and send the user to the dashboard
-		app.mongo.collection("link").save( { _id : uuid.v4(), username : username, url : link, name : null, active : 1 }, function(err, saved_link) {
-			if(err) 
-				console.log("Error saving link - " + err);
-			else 
-				console.log("Saved - " + JSON.stringify(saved_link));
-			sendYo(username, dashboard_link, function(err, res) {
-				if(err) console.log("Error yo'ing user - " + username + " with link " + link + ":" + err);
+		hyperpotamus.process({ request: link, response: [ 302, headers : { location : /(:<url>.+)/ } ] }, {}, function(err, session) {
+			// New link, let's save it and send the user to the dashboard
+			app.mongo.collection("link").save( { _id : uuid.v4(), username : username, url : session["url"], name : null, active : 1 }, function(err, saved_link) {
+				if(err) 
+					console.log("Error saving link - " + err);
+				else 
+					console.log("Saved - " + JSON.stringify(saved_link));
+				sendYo(username, dashboard_link, function(err, res) {
+					if(err) console.log("Error yo'ing user - " + username + " with link " + link + ":" + err);
+				});
 			});
 		});
 	}

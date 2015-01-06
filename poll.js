@@ -1,7 +1,7 @@
 var _ = require("underscore");
 var mongodb = require("mongodb").MongoClient;
 var uuid = require("node-uuid");
-var request = require("request");
+var hyperpotamus = require("hyperpotamus");
 
 var config = require("./lib/config")({
 	YO_API_KEY : null,
@@ -18,8 +18,8 @@ var sendYo = yoSender(config.get("YO_API_KEY"));
 
 function monitor(link, callback) {
 	console.log("Checking " + JSON.stringify(link));
-	request(link.url, function(error, response, body) {
-		if(error || response.statusCode!=200) {
+	hyperpotamus.yaml.process_text(link.url, {}, function(error, session) {
+		if(error) {
 			console.log("Detected error monitoring - " + link.url);
 			mongodb.connect(config.get("MONGOHQ_URL"), function(err, db) {
 				if(err) {
@@ -30,20 +30,17 @@ function monitor(link, callback) {
 					_id : uuid.v4(), 
 					linkid : link._id, 
 					date : new Date(), 
-					response : { 
-						statusCode : response.statusCode,
-						body : body 
-					}
+					error: error
 				};
-				db.collection("error_report").save(error_report, function(err, saved_report) {
+				db.collection("error_report").save(error_report, function(err) {
 					db.close();
 					if(err) {
 						console.log("Error saving error_report from link - " + JSON.stringify(link) + " - " + err);
 						return callback(false);
 					}
-					console.log("Saved error_report - " + JSON.stringify(saved_report));
+					console.log("Saved error_report - " + JSON.stringify(error_report));
 					var model = {
-						MESSAGE : saved_report._id,
+						MESSAGE : error_report._id,
 						USERNAME : link.username
 					};
 					sendYo(link.username, url_template(model), function(err, response) {
